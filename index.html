@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Programa do Amor.exe — Vittor & Shay</title>
+<title>Programa do Amor — Vittor & Shay</title>
 <style>
   body {
     background: radial-gradient(circle at center, #1a1a2e, #16213e);
@@ -33,7 +33,7 @@
   }
   .btn:hover { background-color: #ff6f91; }
   #no {
-    position: absolute;
+    position: fixed; /* mudou de absolute para fixed */
   }
   @keyframes floatHearts {
     0% { transform: translateY(0) scale(1); opacity: 1; }
@@ -53,10 +53,13 @@
   <p id="texto"></p>
   <button class="btn" id="yes">Sim 💖</button>
   <button class="btn" id="no">Não 😅</button>
-  <audio id="musica" src="musica.mp3"></audio>
 </div>
+
+<!-- moved audio outside the container so it is not removed when #container.innerHTML is replaced -->
+<audio id="musica" src="musica.mp3" preload="auto"></audio>
+
 <script>
-const texto = "Inicializando Programa do Amor.exe...\nCarregando sentimentos...\nCompilando lembranças compartilhadas...\nUsuário detectado: Shay 💖\n\nQuer namorar comigo, Shay?";
+const texto = "Inicializando Programa do Amor...\nCarregando sentimentos...\nCompilando lembranças compartilhadas...\nUsuário detectado: Shay 💖\nNós começamos como desconhecidos\nAgora você é Minha Duo mas não quero parar por aqui!\n\nQuer ser meu duo na vida, Shay?";
 let i = 0;
 function digitar() {
   if (i < texto.length) {
@@ -72,9 +75,32 @@ const nao = document.getElementById("no");
 const musica = document.getElementById("musica");
 
 sim.onclick = () => {
-  musica.play();
-  document.getElementById("container").innerHTML = "<h1>💘 Compilação concluída 💘</h1><p>Status: NAMORANDO</p><h2>Vittor + Shay = ∞</h2>";
-  for (let i = 0; i < 30; i++) criarCoracao();
+  // garante que comece do início
+  musica.currentTime = 0;
+  musica.volume = 0;     // começa silenciosa
+  musica.loop = true;    // opcional: repetir a música
+  // tentar tocar (tratando a promise para capturar possíveis bloqueios)
+  musica.play().then(() => {
+    // fade-in suave (aumenta o volume aos poucos)
+    let vol = 0;
+    const fade = setInterval(() => {
+      if (vol < 1) {
+        vol = Math.min(1, vol + 0.02);
+        musica.volume = vol;
+      } else {
+        clearInterval(fade);
+      }
+    }, 100);
+
+    document.getElementById("container").innerHTML = "<h1>💘 Compilação concluída 💘</h1><p>Status: NAMORANDO</p><h2>Vittor + Shay = ∞</h2>";
+    for (let i = 0; i < 30; i++) criarCoracao();
+  }).catch(err => {
+    console.error("Não foi possível reproduzir o áudio:", err);
+    alert("Não foi possível tocar a música automaticamente. Por favor, permita reprodução de áudio no navegador.");
+    // ainda substitui o container para não travar a interação
+    document.getElementById("container").innerHTML = "<h1>💘 Compilação concluída 💘</h1><p>Status: NAMORANDO</p><h2>Vittor + Shay = ∞</h2>";
+    for (let i = 0; i < 30; i++) criarCoracao();
+  });
 };
 
 function criarCoracao() {
@@ -88,8 +114,12 @@ function criarCoracao() {
 }
 
 nao.onmouseover = () => {
-  nao.style.left = Math.random() * window.innerWidth + "px";
-  nao.style.top = Math.random() * window.innerHeight + "px";
+  const btnW = nao.offsetWidth;
+  const btnH = nao.offsetHeight;
+  const maxX = Math.max(0, window.innerWidth - btnW);
+  const maxY = Math.max(0, window.innerHeight - btnH);
+  nao.style.left = Math.random() * maxX + "px";
+  nao.style.top = Math.random() * maxY + "px";
 };
 </script>
 </body>
