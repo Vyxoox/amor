@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Programa do Amor.exe — Vittor & Shay</title>
+<style>
+  body {
+    background: radial-gradient(circle at center, #1a1a2e, #16213e);
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    text-align: center;
+    overflow: hidden;
+    height: 100vh;
+    margin: 0;
+  }
+  h1, p { margin: 10px 0; }
+  #container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .btn {
+    background-color: #e94560;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: 0.3s;
+  }
+  .btn:hover { background-color: #ff6f91; }
+  #no {
+    position: absolute;
+  }
+  @keyframes floatHearts {
+    0% { transform: translateY(0) scale(1); opacity: 1; }
+    100% { transform: translateY(-800px) scale(1.5); opacity: 0; }
+  }
+  .heart {
+    position: fixed;
+    bottom: 0;
+    color: pink;
+    font-size: 20px;
+    animation: floatHearts 5s linear infinite;
+  }
+</style>
+</head>
+<body>
+<div id="container">
+  <p id="texto"></p>
+  <button class="btn" id="yes">Sim 💖</button>
+  <button class="btn" id="no">Não 😅</button>
+  <audio id="musica" src="musica.mp3"></audio>
+</div>
+<script>
+const texto = "Inicializando Programa do Amor.exe...\nCarregando sentimentos...\nCompilando lembranças compartilhadas...\nUsuário detectado: Shay 💖\n\nQuer namorar comigo, Shay?";
+let i = 0;
+function digitar() {
+  if (i < texto.length) {
+    document.getElementById("texto").innerHTML += texto.charAt(i) === "\n" ? "<br>" : texto.charAt(i);
+    i++;
+    setTimeout(digitar, 60);
+  }
+}
+digitar();
+
+const sim = document.getElementById("yes");
+const nao = document.getElementById("no");
+const musica = document.getElementById("musica");
+
+sim.onclick = () => {
+  musica.play();
+  document.getElementById("container").innerHTML = "<h1>💘 Compilação concluída 💘</h1><p>Status: NAMORANDO</p><h2>Vittor + Shay = ∞</h2>";
+  for (let i = 0; i < 30; i++) criarCoracao();
+};
+
+function criarCoracao() {
+  const heart = document.createElement("div");
+  heart.classList.add("heart");
+  heart.style.left = Math.random() * 100 + "vw";
+  heart.style.animationDuration = (3 + Math.random() * 2) + "s";
+  heart.innerText = "💖";
+  document.body.appendChild(heart);
+  setTimeout(() => heart.remove(), 5000);
+}
+
+nao.onmouseover = () => {
+  nao.style.left = Math.random() * window.innerWidth + "px";
+  nao.style.top = Math.random() * window.innerHeight + "px";
+};
+</script>
+</body>
+</html>
