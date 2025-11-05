@@ -45,6 +45,7 @@
     color: pink;
     font-size: 20px;
     animation: floatHearts 5s linear infinite;
+    pointer-events: none; /* evita bloquear cliques enquanto os corações persistem */
   }
 </style>
 </head>
@@ -110,7 +111,7 @@ function criarCoracao() {
   heart.style.animationDuration = (3 + Math.random() * 2) + "s";
   heart.innerText = "💖";
   document.body.appendChild(heart);
-  setTimeout(() => heart.remove(), 5000);
+  // removido o setTimeout para que o coração permaneça até fechar ou recarregar a página
 }
 
 nao.onmouseover = () => {
