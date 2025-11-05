@@ -21,6 +21,16 @@
     left: 50%;
     transform: translate(-50%, -50%);
   }
+
+  /* novo wrapper para espaçar botões */
+  .buttons {
+    display: inline-flex;
+    gap: 14px;            /* espaço entre os botões */
+    justify-content: center;
+    align-items: center;
+    margin-top: 12px;
+  }
+
   .btn {
     background-color: #e94560;
     color: white;
@@ -29,12 +39,51 @@
     border-radius: 10px;
     font-size: 18px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: 0.18s ease;
+    z-index: 10;
   }
   .btn:hover { background-color: #ff6f91; }
+
+  /* não deixar o botão "Não" posicionado por padrão como fixed para não colar no Sim */
   #no {
-    position: fixed; /* mudou de absolute para fixed */
+    position: relative; /* começa como relativo dentro do fluxo para evitar sobreposição */
+    transition: left 160ms ease, top 160ms ease;
   }
+
+  /* lua decorativa */
+  #moon {
+    position: fixed;
+    right: 6%;
+    top: 6%;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 30% 30%, #f2f2f2 0%, #e6e6e6 25%, #d9d9d9 40%, #bfbfbf 100%);
+    box-shadow: 0 0 30px rgba(255,255,255,0.06), inset -6px -6px 20px rgba(0,0,0,0.15);
+    z-index: 5;
+    transform-origin: center;
+    animation: slowRotate 30s linear infinite;
+    opacity: 0.95;
+  }
+  @keyframes slowRotate { from { transform: rotate(0deg) } to { transform: rotate(360deg) } }
+
+  /* estrelas pequenas (twinkle) */
+  .star {
+    position: fixed;
+    width: 3px;
+    height: 3px;
+    background: #fff;
+    border-radius: 50%;
+    opacity: 0.9;
+    box-shadow: 0 0 6px rgba(255,255,255,0.9);
+    animation: twinkle 2s infinite alternate;
+    pointer-events: none;
+  }
+  @keyframes twinkle {
+    from { opacity: 0.2; transform: scale(0.6); }
+    to   { opacity: 1; transform: scale(1.2); }
+  }
+
   @keyframes floatHearts {
     0% { transform: translateY(0) scale(1); opacity: 1; }
     100% { transform: translateY(-800px) scale(1.5); opacity: 0; }
@@ -46,18 +95,36 @@
     font-size: 20px;
     animation: floatHearts 5s linear infinite;
     pointer-events: none; /* evita bloquear cliques enquanto os corações persistem */
+    z-index: 3;
+    text-shadow: 0 2px 6px rgba(0,0,0,0.4);
   }
+
+  /* mensagem de memórias */
+  #memorias {
+    margin-top: 12px;
+    font-size: 16px;
+    color: #ffd6e0;
+  }
+  .memoria-item { opacity: 0.0; transition: opacity 600ms ease; }
+  .memoria-item.show { opacity: 1; }
 </style>
 </head>
 <body>
 <div id="container">
   <p id="texto"></p>
-  <button class="btn" id="yes">Sim 💖</button>
-  <button class="btn" id="no">Não 😅</button>
+
+  <!-- usa o wrapper .buttons para controlar espaçamento -->
+  <div class="buttons">
+    <button class="btn" id="yes">Sim 💖</button>
+    <button class="btn" id="no">Não 😅</button>
+  </div>
 </div>
 
 <!-- moved audio outside the container so it is not removed when #container.innerHTML is replaced -->
 <audio id="musica" src="musica.mp3" preload="auto"></audio>
+
+<!-- lua sempre visível -->
+<div id="moon" aria-hidden="true"></div>
 
 <script>
 const texto = "Inicializando Programa do Amor...\nCarregando sentimentos...\nCompilando lembranças compartilhadas...\nUsuário detectado: Shay 💖\nNós começamos como desconhecidos\nAgora você é Minha Duo mas não quero parar por aqui!\n\nQuer ser meu duo na vida, Shay?";
@@ -75,14 +142,49 @@ const sim = document.getElementById("yes");
 const nao = document.getElementById("no");
 const musica = document.getElementById("musica");
 
+// pequenas mémorias relacionadas ao Valorant e lua
+const memorias = [
+  "Nos conhecemos jogando Valorant — partida que não esquecerei nunca.",
+  "Desde então cada partida que jogamos juntos, só me provou oque meu coração ja tinha certeza.",
+  "Risos e palhaçadas: as melhores jogadas juntos no jogo.",
+  "Por ti eu enfrento quantos forem, para que possamos vencer juntos.",
+  "Cada call, cada partida, cada pequeno detalhe me fez te amar cada vez mais",
+  "Quero que seja minha Viper para eu poder ser seu Chamber.",
+];
+
+function mostrarMemorias() {
+  const cont = document.createElement("div");
+  cont.id = "memorias";
+  memorias.forEach((m, idx) => {
+    const p = document.createElement("div");
+    p.className = "memoria-item";
+    p.innerText = "• " + m;
+    cont.appendChild(p);
+    // mostra com atraso para efeito de lista
+    setTimeout(() => p.classList.add("show"), 700 + idx * 600);
+  });
+  document.getElementById("container").appendChild(cont);
+}
+
+// cria pequenas estrelas de fundo (apenas decorativo)
+function criarEstrelas(count = 25) {
+  for (let s = 0; s < count; s++) {
+    const star = document.createElement("div");
+    star.classList.add("star");
+    star.style.left = Math.random() * 100 + "vw";
+    star.style.top = Math.random() * 100 + "vh";
+    star.style.animationDuration = (1 + Math.random() * 2) + "s";
+    star.style.opacity = 0.5 + Math.random() * 0.8;
+    document.body.appendChild(star);
+  }
+}
+criarEstrelas(30);
+
 sim.onclick = () => {
-  // garante que comece do início
   musica.currentTime = 0;
-  musica.volume = 0;     // começa silenciosa
-  musica.loop = true;    // opcional: repetir a música
-  // tentar tocar (tratando a promise para capturar possíveis bloqueios)
+  musica.volume = 0;
+  musica.loop = true;
   musica.play().then(() => {
-    // fade-in suave (aumenta o volume aos poucos)
     let vol = 0;
     const fade = setInterval(() => {
       if (vol < 1) {
@@ -95,12 +197,13 @@ sim.onclick = () => {
 
     document.getElementById("container").innerHTML = "<h1>💘 Compilação concluída 💘</h1><p>Status: NAMORANDO</p><h2>Vittor + Shay = ∞</h2>";
     for (let i = 0; i < 30; i++) criarCoracao();
+    mostrarMemorias();
   }).catch(err => {
     console.error("Não foi possível reproduzir o áudio:", err);
     alert("Não foi possível tocar a música automaticamente. Por favor, permita reprodução de áudio no navegador.");
-    // ainda substitui o container para não travar a interação
-    document.getElementById("container").innerHTML = "<h1>💘 Compilação concluída 💘</h1><p>Status: NAMORANDO</p><h2>Vittor + Shay = ∞</h2>";
+    document.getElementById("container").innerHTML = "<h1>💘 Missão concluída 💘</h1><p>Status: NAMORANDO</p><h2>Vittor + Shay = ∞</h2>";
     for (let i = 0; i < 30; i++) criarCoracao();
+    mostrarMemorias();
   });
 };
 
@@ -109,16 +212,30 @@ function criarCoracao() {
   heart.classList.add("heart");
   heart.style.left = Math.random() * 100 + "vw";
   heart.style.animationDuration = (3 + Math.random() * 2) + "s";
-  heart.innerText = "💖";
+
+  // escolhe aleatoriamente entre coração, lua ou referência a jogo (🎮)
+  const r = Math.random();
+  if (r < 0.65) heart.innerText = "💖";
+  else if (r < 0.85) heart.innerText = "🌙"; // lua
+  else heart.innerText = "🎮"; // jogo / Valorant
+
+  // aumenta um pouco a lua e game icons para destaque
+  if (heart.innerText === "🌙") heart.style.fontSize = (20 + Math.random() * 18) + "px";
+  if (heart.innerText === "🎮") heart.style.fontSize = (18 + Math.random() * 16) + "px";
+
   document.body.appendChild(heart);
-  // removido o setTimeout para que o coração permaneça até fechar ou recarregar a página
+  // não removemos: permanecem até fechar/recarregar
 }
 
+// agora o botão "Não" vira fixed apenas quando vai se mover,
+// e garantimos que ele não saia da tela (margem de 10px)
 nao.onmouseover = () => {
+  nao.style.position = "fixed";
   const btnW = nao.offsetWidth;
   const btnH = nao.offsetHeight;
-  const maxX = Math.max(0, window.innerWidth - btnW);
-  const maxY = Math.max(0, window.innerHeight - btnH);
+  const margin = 10;
+  const maxX = Math.max(0, window.innerWidth - btnW - margin);
+  const maxY = Math.max(0, window.innerHeight - btnH - margin);
   nao.style.left = Math.random() * maxX + "px";
   nao.style.top = Math.random() * maxY + "px";
 };
